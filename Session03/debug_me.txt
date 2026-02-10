@@ -1,0 +1,4 @@
+errors:
+1. In the second print we have the "zero division error" because t1 = 0 and therefore t0/t1 returns an error, it is line 11
+this will happen any time the parameters c and d of function f take the same value.
+thats why Results 1, 3 and 4 are properly computed.
