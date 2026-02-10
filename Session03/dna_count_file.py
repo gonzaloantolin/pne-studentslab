@@ -67,3 +67,4 @@ for base, count in bases.items():
 
 
 #from dna_count import count_bases
+#if __name__ == "__main__":
