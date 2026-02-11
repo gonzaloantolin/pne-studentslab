@@ -40,7 +40,7 @@ print("____________other way (WITH FILES)_____________")
 
 #lines = ["AGTACACTGGT", "ACCAGTGTACT", "ATGGCCATTGTAATGGGCCGCTGAAAGGGTGCCCGATAG"]
 #print("from variable:", lines)
-
+from dna_count import count_bases
 f = open("dna.txt.", "r") #one way of opening files
 #code goes here
 lines = f.readlines()
@@ -55,10 +55,10 @@ bases = {"A": 0, "C": 0, "T": 0, "G": 0}
 for seq in lines:
     seq = seq.strip() #remove spaces and newline characters at the end of the string
     total_number += len(seq)
+    result = count_bases(seq)
+    for key in result:
+        bases[key] += result[key]
 
-    for base in seq:
-        if base in bases:
-            bases[base] += 1
 
 print("Total number of bases:", total_number)
 
