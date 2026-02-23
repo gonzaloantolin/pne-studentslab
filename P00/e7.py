@@ -5,8 +5,8 @@ filename = "sequences/U5.txt"
 sequence = seq_read_fasta(filename)
 
 fragment = sequence[:20]
-reverse = seq_reverse(sequence, 20)
+complement = seq_complement(fragment)
 
 print(f"Gene {gene}")
-print("Fragment: ", fragment)
-print("Reverse: ", reverse)
+print("Frag: ", fragment)
+print("Comp: ", complement)
