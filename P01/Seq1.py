@@ -1,3 +1,4 @@
+from pathlib import Path
 class Seq:
     def __init__(self, bases=None):
         if bases is None:
@@ -50,4 +51,11 @@ class Seq:
         for base in self.bases:
             complement_seq += complement_dict[base]
         return complement_seq
+
+    def read_fasta(self, filename):
+        file_contents = Path(filename).read_text()
+        file_contents = file_contents.split("\n")
+        body = "".join(file_contents[1:])
+        self.bases = body
+        return self.bases
 
