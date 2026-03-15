@@ -3,64 +3,40 @@ from P02.Client0 import Client
 IP = "127.0.0.1"
 PORT = 8080
 
-print("-----| Practice 3, Exercise 7 |------")
-print(f"Connection to SERVER at {IP}, PORT: {PORT}")
+def main():
+    c = Client(IP, PORT)
+    print("------| Practice 3, Exercise 7 |-------")
+    print(c)
 
-c = Client(IP, PORT)
+    print("Testing PING...")
+    print(c.talk("PING").strip())
 
-# ----------------
-# PING
-# ----------------
-print("* Testing PING...")
-response = c.talk("PING")
-print(response)
+    print("Testing GET...")
+    seq0 = c.talk("GET 0").strip()
+    print(f"GET 0: {seq0}")
 
-# ----------------
-# GET
-# ----------------
-print("\n* Testing GET...")
+    for i in range(1, 5):
+        res = c.talk(f"GET {i}").strip()
+        print(f"GET {i}: {res}")
 
-seq0 = ""
+    print("Testing INFO...")
+    print(f"Sequence: {seq0}")
+    print(c.talk(f"INFO {seq0}").strip())
 
-for i in range(5):
-    command = f"GET {i}"
-    response = c.talk(command)
-    print(f"{command}: {response.strip()}")
+    print("Testing COMP...")
+    print(f"COMP {seq0}")
+    print(c.talk(f"COMP {seq0}").strip())
 
-    if i == 0:
-        seq0 = response.strip()
+    print("Testing REV...")
+    print(f"REV {seq0}")
+    print(c.talk(f"REV {seq0}").strip())
 
-# ----------------
-# INFO
-# ----------------
-print("\n* Testing INFO...")
-response = c.talk(f"INFO {seq0}")
-print(response)
+    print("Testing GENE...")
+    genes = ["U5", "ADA", "FRAT1", "FXN", "RNU6_269P"]
+    for gene in genes:
+        full_response = c.talk(f"GENE {gene}").strip()
+        print(f"GENE {gene}")
+        print(full_response)
 
-# ----------------
-# COMP
-# ----------------
-print("* Testing COMP...")
-print(f"COMP {seq0}")
-response = c.talk(f"COMP {seq0}")
-print(response)
-
-# ----------------
-# REV
-# ----------------
-print("* Testing REV...")
-print(f"REV {seq0}")
-response = c.talk(f"REV {seq0}")
-print(response)
-
-# ----------------
-# GENE
-# ----------------
-print("* Testing GENE...")
-
-genes = ["U5", "ADA", "FRAT1", "FXN", "RNU6_269P"]
-
-for gene in genes:
-    print(f"GENE {gene}")
-    response = c.talk(f"GENE {gene}")
-    print(response)
+if __name__ == "__main__":
+    main()
