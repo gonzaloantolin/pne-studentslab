@@ -4,19 +4,41 @@
     <title>Seq 2 Server</title>
 </head>
 <body>
-    <h1>Access to the server</h1>
+    <h1>SEQ2 SERVER</h1>
+    <p>Access to the server:</p>
+    <hr>
 
-    <p>Check if server is alive:</p>
-    <a href="/ping">PING</a>
+    <p>Is the server alive?</p>
+
+    <form action="ping" method="get">
+        <input type="submit" value="Ping">
+    </form>
 
     <hr>
 
-    <h2>Get sequence</h2>
+    <h2>Get a sequence</h2>
 
-    <form action="/get" method="get">
+    <form action="get" method="get">
         <label for="n">Sequence number (0-4):</label>
         <input type="number" id="n" name="n" min="0" max="4" required>
         <input type="submit" value="Get sequence">
+    </form>
+
+    <hr>
+
+    <h2>Get a Gene</h2>
+
+    <form action="gene" method="get">
+        <label for="g">Gene name:</label>
+        <select id="g" name="g">
+            <option value="U5">U5</option>
+            <option value="ADA">ADA</option>
+            <option value="FRAT1">FRAT1</option>
+            <option value="FXN">FXN</option>
+            <option value="RNU6_269P">RNU6_269P</option>
+        </select>
+
+        <input type="submit" value="Get gene">
     </form>
 
 </body>
