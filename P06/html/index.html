@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Seq 2 Server</title>
+</head>
+<body>
+    <h1>Access to the server</h1>
+
+    <p>Check if server is alive:</p>
+    <a href="/ping">PING</a>
+
+    <hr>
+
+    <h2>Get sequence</h2>
+
+    <form action="/get" method="get">
+        <label for="n">Sequence number (0-4):</label>
+        <input type="number" id="n" name="n" min="0" max="4" required>
+        <input type="submit" value="Get sequence">
+    </form>
+
+</body>
+</html>
