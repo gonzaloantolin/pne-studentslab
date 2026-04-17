@@ -6,6 +6,13 @@ import os
 
 PORT = 8080
 
+SEQUENCES = [
+"ACCTCCTCTCCAGCAATGCCAACCCCAGTCCAGGCCCCCATCCGCCCAGGATCTCGATCA",
+"AAAAACATTAATCTGTGGCCTTTCTTTGCCATTTCCAACTCTGCCACCTCCATCGAACGA",
+"CAAGGTCCCCTTCTTCCTTTCCATTCCCGTCAGCTTCATTTCCCTAATCTCCGTACAAAT",
+"CCCTAGCCTGACTCCCTTTCCTTTCCATCCTCACCAGACGCCCGCATGCCGGACCTCAAA",
+"AGCGCAAACGCTAAAAACCGGTTGAGTTGACGCACGGAGAGAAGGGGTGTGTGGGTGGGT"
+]
 GENES = ["U5", "ADA", "FRAT1", "FXN", "RNU6_269P"]
 
 # Jinja setup (lo copiamops d la wiki)
@@ -41,14 +48,11 @@ class SeqHandler(BaseHTTPRequestHandler):
 
         elif path == "/get":
             query = parse_qs(parsed_path.query)
-
             if "n" in query:
                 try:
                     n = int(query["n"][0])
                     if 0 <= n <= 4:
-                        file_path = os.path.join("sequences", f"{GENES[n]}.txt")
-                        with open(file_path, "r") as f:
-                            sequence = f.read()
+                        sequence = SEQUENCES[n]
                         html = read_html_file("get.html", {"sequence": sequence,"n": n})
                         self.send_response(200)
                         self.send_header("Content-type", "text/html")
@@ -84,6 +88,50 @@ class SeqHandler(BaseHTTPRequestHandler):
                     self.send_error(400, "Invalid gene")
             else:
                 self.send_error(400, "Missing parameter g")
+
+
+        elif path == "/operation":
+            query = parse_qs(parsed_path.query)
+            if "seq" in query and "op" in query:
+                seq = query["seq"][0].upper()
+                op = query["op"][0]
+                if not all(base in "ATCG" for base in seq):
+                    html = read_html_file("error.html")
+                    self.send_response(400)
+                    self.send_header("Content-type", "text/html")
+                    self.end_headers()
+                    self.wfile.write(html.encode())
+                    return
+                try:
+                    if op == "1":
+                        total = len(seq)
+
+                        countA = seq.count("A")
+                        countC = seq.count("C")
+                        countG = seq.count("G")
+                        countT = seq.count("T")
+
+                        result = f"""Total length: {total}
+                    A: {countA} ({countA / total * 100:.1f}%)
+                    C: {countC} ({countC / total * 100:.1f}%)
+                    G: {countG} ({countG / total * 100:.1f}%)
+                    T: {countT} ({countT / total * 100:.1f}%)"""
+                    elif op == "2":
+                        comp = {"A": "T", "T": "A", "C": "G", "G": "C"}
+                        result = "".join(comp[b] for b in seq)
+                    elif op == "3":
+                        result = seq[::-1]
+                    else:
+                        raise ValueError
+                    html = read_html_file("operation.html", {"sequence": seq,"result": result,"operation": op})
+                    self.send_response(200)
+                    self.send_header("Content-type", "text/html")
+                    self.end_headers()
+                    self.wfile.write(html.encode())
+                except:
+                    self.send_error(400, "Invalid operation")
+            else:
+                self.send_error(400, "Missing parameters")
 
 
         else:
