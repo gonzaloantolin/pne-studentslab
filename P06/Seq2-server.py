@@ -4,7 +4,7 @@ import jinja2 as j
 from pathlib import Path
 import os
 
-PORT = 8080
+PORT = 8081
 
 SEQUENCES = [
 "ACCTCCTCTCCAGCAATGCCAACCCCAGTCCAGGCCCCCATCCGCCCAGGATCTCGATCA",
@@ -111,11 +111,13 @@ class SeqHandler(BaseHTTPRequestHandler):
                         countG = seq.count("G")
                         countT = seq.count("T")
 
-                        result = f"""Total length: {total}
-                    A: {countA} ({countA / total * 100:.1f}%)
-                    C: {countC} ({countC / total * 100:.1f}%)
-                    G: {countG} ({countG / total * 100:.1f}%)
-                    T: {countT} ({countT / total * 100:.1f}%)"""
+                        result = (
+                            f"Total length: {total}<br>"
+                            f"A: {countA} ({countA / total * 100:.1f}%)<br>"
+                            f"C: {countC} ({countC / total * 100:.1f}%)<br>"
+                            f"G: {countG} ({countG / total * 100:.1f}%)<br>"
+                            f"T: {countT} ({countT / total * 100:.1f}%)"
+                        )
                     elif op == "2":
                         comp = {"A": "T", "T": "A", "C": "G", "G": "C"}
                         result = "".join(comp[b] for b in seq)
