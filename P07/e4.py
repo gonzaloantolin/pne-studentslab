@@ -2,6 +2,7 @@ from P01.Seq1 import Seq
 import http.client
 import json
 from e2 import genes
+
 SERVER = "rest.ensembl.org"
 gene_name = input("Write the gene name: ").upper()
 gene_id = genes[gene_name]

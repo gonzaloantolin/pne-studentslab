@@ -2,24 +2,9 @@ from P01.Seq1 import Seq
 import http.client
 import json
 from e2 import genes
+
 SERVER = "rest.ensembl.org"
-gene_name = ###3
-gene_id = genes[gene_name]
 
-ENDPOINT = "/sequence/id/" + gene_id
-PARAMS = "?content-type=application/json"
-
-
-print()
-print(f"Server: {SERVER}")
-print(f"URL: {SERVER + ENDPOINT + PARAMS}")
-
-conn = http.client.HTTPSConnection(SERVER)
-conn.request("GET", ENDPOINT + PARAMS)
-
-response = conn.getresponse()
-data = response.read().decode("utf-8")
-response = json.loads(data)
 def composition(s):
     total = len(s)
     A = s.count_base("A")
@@ -37,8 +22,23 @@ def composition(s):
                 f"G: {G} ({pg:.1f}%)\n"
                 f"T: {T} ({pt:.1f}%)\n")
     print(response)
-for gene in genes:
+
+for gene_name in genes:
+
+    gene_id = genes[gene_name]
+
+    ENDPOINT = "/sequence/id/" + gene_id
+    PARAMS = "?content-type=application/json"
+
+    conn = http.client.HTTPSConnection(SERVER)
+    conn.request("GET", ENDPOINT + PARAMS)
+
+    response = conn.getresponse()
+    data = response.read().decode("utf-8")
+    response = json.loads(data)
+
     sequence = response["seq"]
+
     s = Seq(sequence)
     bases_dict = s.count()
     most_frequent = max(bases_dict, key=bases_dict.get)
