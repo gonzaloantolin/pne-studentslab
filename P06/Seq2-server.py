@@ -146,7 +146,6 @@ class SeqHandler(BaseHTTPRequestHandler):
 if __name__ == "__main__":
     server = HTTPServer(("", PORT), SeqHandler)
     print(f"Server running on http://localhost:{PORT}")
-
     try:
         server.serve_forever()
     except KeyboardInterrupt:

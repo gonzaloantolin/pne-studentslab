@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>List of species</title>
+</head>
+
+<body style="background-color: lightblue;">
+
+<h1>LIST OF SPECIES IN THE BROWSER</h1>
+
+<p>The total number of species in the ensembl is : {{ total }}</p>
+<p>The limit you have selected is : {{ limit }}</p>
+<p>The names of the species are :</p>
+
+<ul>
+{% for s in species %}
+    <li>{{ s }}</li>
+{% endfor %}
+</ul>
+
+</body>
+</html>
