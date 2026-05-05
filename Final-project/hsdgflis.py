@@ -133,6 +133,7 @@ class SeqHandler(BaseHTTPRequestHandler):
                     self.end_headers()
                     self.wfile.write(html.encode())
                     return
+
                 top_level_region_data = data2["top_level_region"]
                 chromosome = chromo_name
                 found = False
@@ -163,6 +164,78 @@ class SeqHandler(BaseHTTPRequestHandler):
             self.end_headers()
             self.wfile.write(html.encode())
 
+
+        elif path == "/geneLookup":
+
+            query = parse_qs(parsed_path.query)
+
+            # comprobar parámetro
+
+            if not query.get("gene"):
+                html = read_html_file("error.html", {"message": "Missing gene"})
+
+                self.send_response(400)
+
+                self.send_header("Content-type", "text/html")
+
+                self.end_headers()
+
+                self.wfile.write(html.encode())
+
+                return
+
+            gene = query["gene"][0]
+
+            # endpoint correcto (el que tú has encontrado 👇)
+
+            url = f"https://rest.ensembl.org/lookup/symbol/homo_sapiens/{gene}?content-type=application/json"
+
+            reqs = requests.get(url)
+
+            if reqs.status_code == 200:
+
+                data = reqs.json()
+
+                gene_id = data.get("id")
+
+                if not gene_id:
+
+                    html = read_html_file("error.html", {"message": "Gene not found"})
+
+                    self.send_response(404)
+
+                else:
+
+                    html = read_html_file("geneLookup.html", {
+
+                        "gene": gene,
+
+                        "gene_id": gene_id
+
+                    })
+
+                    self.send_response(200)
+
+
+            else:
+
+                html = read_html_file("error.html", {"message": "Gene not found"})
+
+                self.send_response(404)
+
+            self.send_header("Content-type", "text/html")
+
+            self.end_headers()
+
+            self.wfile.write(html.encode())
+
+
+
+
+
+
+
+
         else:
             html = read_html_file("error.html")
             self.send_response(404)
@@ -178,4 +251,3 @@ if __name__ == "__main__":
     except KeyboardInterrupt:
         print("\nServer stopped")
         server.server_close()
-
