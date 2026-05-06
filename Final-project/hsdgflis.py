@@ -230,6 +230,95 @@ class SeqHandler(BaseHTTPRequestHandler):
             self.wfile.write(html.encode())
 
 
+        elif path == "/geneSeq":
+
+            query = parse_qs(parsed_path.query)
+
+            if not query.get("gene"):
+                html = read_html_file("error.html", {"message": "Missing gene"})
+
+                self.send_response(400)
+
+                self.send_header("Content-type", "text/html")
+
+                self.end_headers()
+
+                self.wfile.write(html.encode())
+
+                return
+
+            gene = query["gene"][0]
+
+            # 🔹 Obtener ID del gen
+
+            url_lookup = "https://rest.ensembl.org/lookup/symbol/homo_sapiens/" + gene + "?content-type=application/json"
+
+            req_lookup = requests.get(url_lookup)
+
+            if req_lookup.status_code == 200:
+
+                gene_data = req_lookup.json()
+
+                gene_id = gene_data.get("id")
+
+                if gene_id:
+
+                    # 🔹 Obtener secuencia
+
+                    url = "https://rest.ensembl.org/sequence/id/" + gene_id + "?content-type=text/plain"
+
+                    reqs = requests.get(url)
+
+                    if reqs.status_code == 200:
+
+                        sequence = reqs.text
+
+                        if sequence:
+
+                            html = read_html_file("geneSeq.html", {
+
+                                "gene": gene,
+
+                                "sequence": sequence
+
+                            })
+
+                            self.send_response(200)
+
+                        else:
+
+                            html = read_html_file("error.html", {"message": "Sequence not found"})
+
+                            self.send_response(404)
+
+
+                    else:
+
+                        html = read_html_file("error.html", {"message": "Error with sequence"})
+
+                        self.send_response(400)
+
+
+                else:
+
+                    html = read_html_file("error.html", {"message": "Gene not found"})
+
+                    self.send_response(404)
+
+
+            else:
+
+                html = read_html_file("error.html", {"message": "Error with gene"})
+
+                self.send_response(400)
+
+            self.send_header("Content-type", "text/html")
+
+            self.end_headers()
+
+            self.wfile.write(html.encode())
+
+
 
 
 

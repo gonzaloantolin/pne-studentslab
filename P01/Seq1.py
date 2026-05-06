@@ -59,3 +59,22 @@ class Seq:
         self.bases = body
         return self.bases
 
+    def composition(self):
+        total = len(self)
+        A = self.count_base("A")
+        C = self.count_base("C")
+        G = self.count_base("G")
+        T = self.count_base("T")
+
+        pa = (A / total) * 100
+        pc = (C / total) * 100
+        pg = (G / total) * 100
+        pt = (T / total) * 100
+
+        return {
+            "A": (A, pa),
+            "C": (C, pc),
+            "G": (G, pg),
+            "T": (T, pt)
+        }
+
