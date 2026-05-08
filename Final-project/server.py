@@ -326,6 +326,11 @@ class SeqHandler(BaseHTTPRequestHandler):
             self.end_headers()
             self.wfile.write(html.encode())
 
+        elif path == "/geneList":
+            query = parse_qs(parsed_path.query)
+
+
+
 
 
 

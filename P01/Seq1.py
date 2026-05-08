@@ -66,15 +66,27 @@ class Seq:
         G = self.count_base("G")
         T = self.count_base("T")
 
-        pa = (A / total) * 100
-        pc = (C / total) * 100
-        pg = (G / total) * 100
-        pt = (T / total) * 100
+        pa = round(((A / total) * 100), 2)
+        pc = round(((C / total) * 100), 2)
+        pg = round(((G / total) * 100), 2)
+        pt = round(((T / total) * 100), 2)
 
         return {
-            "A": (A, pa),
-            "C": (C, pc),
-            "G": (G, pg),
-            "T": (T, pt)
+            "A": {
+                "total A bases": A,
+                "%": pa
+            },
+            "C": {
+                "total C bases": C,
+                "%": pc
+            },
+            "G": {
+                "total G bases": G,
+                "%": pg
+            },
+            "T": {
+                "total T bases": T,
+                "%": pt
+            }
         }
 

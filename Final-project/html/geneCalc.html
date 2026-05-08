@@ -8,15 +8,9 @@
 
     <p>Total length: {{ length }}</p>
     <p>Base composition:</p>
-    <p>A: {{ A }}</p>
-    <p>Base composition:</p>
-    <p>Base composition:</p>
-    <p>Base composition:</p>
-    <ul>
-        <li>A: {{ A }}</li>
-        <li>C: {{ C }}</li>
-        <li>G: {{ G }}</li>
-        <li>T: {{ T }}</li>
-    </ul>
+    <p>A: {{ A["total A bases"] }} ({{ A["%"] }}%)</p>
+    <p>C: {{ C["total C bases"] }} ({{ C["%"] }}%)</p>
+    <p>G: {{ G["total G bases"] }} ({{ G["%"] }}%)</p>
+    <p>T: {{ T["total T bases"] }} ({{ T["%"] }}%)</p>
     <br>
 </body>
