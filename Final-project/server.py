@@ -329,15 +329,44 @@ class SeqHandler(BaseHTTPRequestHandler):
         elif path == "/geneList":
             query = parse_qs(parsed_path.query)
 
+            if not query.get("chromo") or not query.get("start") or not query.get("end"):
+                html = read_html_file("error.html", {"message": "Missing gene"})
+                self.send_response(400)
+                self.send_header("Content-type", "text/html")
+                self.end_headers()
+                self.wfile.write(html.encode())
+                return
 
+            chromo = query["chromo"][0]
+            start = query["start"][0]
+            end = query["end"][0]
 
+            url = "https://rest.ensembl.org/overlap/region/human/" + chromo + ":" + start + "-" + end + "?content-type=application/json;feature=gene"
+            reqs = requests.get(url)
 
+            if reqs.status_code == 200:
+                gene_data = reqs.json()
 
+                if gene_data:
+                    genes = ""
 
+                    for gene in gene_data:
+                        gene_name = gene.get("external_name")
+                        gene_id = gene.get("id")
+                        genes += "<li>" + str(gene_name) + ": " + gene_id + "</li>"
+                    html = read_html_file("geneList.html",{"chromo": chromo, "genes": genes})
+                    self.send_response(200)
 
+                else:
+                    html = read_html_file("error.html", {"message": "No genes found"})
+                    self.send_response(404)
 
-
-
+            else:
+                html = read_html_file("error.html", {"message": "Error with genes"})
+                self.send_response(400)
+            self.send_header("Content-type", "text/html")
+            self.end_headers()
+            self.wfile.write(html.encode())
 
 
 

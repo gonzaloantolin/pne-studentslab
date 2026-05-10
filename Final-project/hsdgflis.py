@@ -327,6 +327,7 @@ class SeqHandler(BaseHTTPRequestHandler):
             self.wfile.write(html.encode())
 
 
+
         elif path == "/geneList":
 
             query = parse_qs(parsed_path.query)
@@ -364,61 +365,54 @@ class SeqHandler(BaseHTTPRequestHandler):
 
             if reqs.status_code == 200:
 
-                data = reqs.json()
+                gene_data = reqs.json()
 
-                genes = []
+                if gene_data:
 
-                for item in data:
+                    genes = ""
 
-                    # 🔥 nombre del gen (lo que te piden)
+                    for gene in gene_data:
+                        gene_name = gene.get("external_name")
 
-                    name = item.get("external_name")
+                        gene_id = gene.get("id")
 
-                    # fallback por si viene vacío
+                        genes += (
 
-                    if not name:
-                        name = item.get("display_name")
+                                "<li>" + str(gene_name) +
 
-                    if name:
-                        genes.append(name)
+                                ": " + gene_id +
 
-                if len(genes) > 0:
+                                "</li>"
 
-                    gene_list = "<br>".join(genes)
+                        )
 
-                    html = read_html_file("geneList.html", {
+                    html = read_html_file(
 
-                        "chromo": chromo,
+                        "geneList.html",
 
-                        "start": start,
+                        {
 
-                        "end": end,
+                            "chromo": chromo,
 
-                        "genes": gene_list
+                            "genes": genes
 
-                    })
+                        }
+
+                    )
 
                     self.send_response(200)
 
 
                 else:
 
-                    html = read_html_file("error.html", {
-
-                        "message": "No genes found in region"
-
-                    })
+                    html = read_html_file("error.html", {"message": "No genes found"})
 
                     self.send_response(404)
 
 
             else:
 
-                html = read_html_file("error.html", {
-
-                    "message": "Error calling Ensembl API"
-
-                })
+                html = read_html_file("error.html", {"message": "Error with genes"})
 
                 self.send_response(400)
 
@@ -427,7 +421,6 @@ class SeqHandler(BaseHTTPRequestHandler):
             self.end_headers()
 
             self.wfile.write(html.encode())
-
 
 
 
