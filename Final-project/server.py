@@ -1,10 +1,7 @@
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from urllib.parse import urlparse, parse_qs
 import jinja2 as j
-from pathlib import Path
-import os
 import requests
-from gpg.gpgme import gpgme_op_encrypt_ext_start
 from P01.Seq1 import Seq
 
 PORT = 8080
