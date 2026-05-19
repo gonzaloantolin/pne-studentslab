@@ -4,6 +4,7 @@ import jinja2 as j
 import requests
 from P01.Seq1 import Seq
 
+
 PORT = 8080
 
 env = j.Environment(loader=j.FileSystemLoader("html"))
@@ -364,6 +365,65 @@ class SeqHandler(BaseHTTPRequestHandler):
             self.send_header("Content-type", "text/html")
             self.end_headers()
             self.wfile.write(html.encode())
+
+# EXAM PRACTICE
+        elif path == "/sequence":
+            query = parse_qs(parsed_path.query)
+
+            if not query.get("species") or not query.get("id"):
+                html = read_html_file("error.html", {"message": "Missing gene"})
+                self.send_response(400)
+                self.send_header("Content-type", "text/html")
+                self.end_headers()
+                self.wfile.write(html.encode())
+                return
+
+            gene_id = query["id"][0]
+            species = query["species"][0]
+            url = "https://rest.ensembl.org/lookup/id/" + gene_id + "?content-type=application/json"
+            reqs = requests.get(url)
+
+            if reqs.status_code == 200:
+                gene_data = reqs.json()
+                gene_name = gene_data.get("assembly_name")
+                gene_type = gene_data.get("object_type")
+                gene_species = gene_data.get("species")
+
+                if gene_name and gene_type and gene_species:
+                    if gene_species != species:
+                        html = read_html_file("error.html", {"message": "Species do not match"})
+                        self.send_response(404)
+                    else:
+                        url2 = "https://rest.ensembl.org/sequence/id/" + gene_id + "?content-type=text/plain"
+                        reqs2 = requests.get(url2)
+                        if reqs2.status_code == 200:
+                            sequence = reqs2.text
+                            if sequence:
+                                seq = Seq(sequence)
+                                gene_length = len(seq)
+                                gene_composition = seq.composition()
+                                html = read_html_file("sequence.html",{"gene_name": gene_name, "gene_id": gene_id, "gene_type" : gene_type, "sequence" : sequence, "gene_length": gene_length, "A": gene_composition["A"],"C": gene_composition["C"], "G": gene_composition["G"], "T": gene_composition["T"]})
+                                self.send_response(200)
+                            else:
+                                html = read_html_file("error.html", {"message": "Sequence not found"})
+                                self.send_response(404)
+                        else:
+                            html = read_html_file("error.html", {"message": "Error with sequence"})
+                            self.send_response(400)
+                else:
+                    html = read_html_file("error.html", {"message": "Gene not found"})
+                    self.send_response(404)
+            else:
+                html = read_html_file("error.html", {"message": "Error with gene"})
+                self.send_response(400)
+            self.send_header("Content-type", "text/html")
+            self.end_headers()
+            self.wfile.write(html.encode())
+
+
+
+
+
 
 
 
