@@ -420,6 +420,109 @@ class SeqHandler(BaseHTTPRequestHandler):
             self.end_headers()
             self.wfile.write(html.encode())
 
+        elif path == "/geneLength":
+            query = parse_qs(parsed_path.query)
+
+            if not query.get("gene"):
+                html = read_html_file("error.html", {"message": "Missing gene"})
+                self.send_response(400)
+                self.send_header("Content-type", "text/html")
+                self.end_headers()
+                self.wfile.write(html.encode())
+                return
+
+            gene = query["gene"][0]
+            url = "https://rest.ensembl.org/lookup/symbol/homo_sapiens/" + gene + "?content-type=application/json;expand=1"
+            reqs = requests.get(url)
+
+            if reqs.status_code == 200:
+                gene_data = reqs.json()
+                gene_start = gene_data["start"]
+                gene_end = gene_data["end"]
+                chromo_name = gene_data["seq_region_name"]
+
+                if gene_start and gene_end and chromo_name:
+                    gene_length = gene_end - gene_start + 1
+                    html = read_html_file("geneLength.html",{"gene": gene, "gene_length": gene_length, "chromo_name": chromo_name,})
+                    self.send_response(200)
+                else:
+                    html = read_html_file("error.html", {"message": "Gene not found"})
+                    self.send_response(404)
+            else:
+                html = read_html_file("error.html", {"message": "Error with gene"})
+                self.send_response(400)
+            self.send_header("Content-type", "text/html")
+            self.end_headers()
+            self.wfile.write(html.encode())
+
+        elif path == "/geneRegion":
+            query = parse_qs(parsed_path.query)
+
+            if not query.get("species") or not query.get("gene"):
+                html = read_html_file("error.html", {"message": "Missing gene"})
+                self.send_response(400)
+                self.send_header("Content-type", "text/html")
+                self.end_headers()
+                self.wfile.write(html.encode())
+                return
+
+            gene = query["gene"][0]
+            species = query["species"][0]
+            url = "https://rest.ensembl.org/lookup/symbol/" + species + "/"+ gene + "?content-type=application/json"
+            reqs = requests.get(url)
+
+            if reqs.status_code == 200:
+                gene_data = reqs.json()
+                gene_id = gene_data.get("id")
+                gene_start = gene_data.get("start")
+                gene_end = gene_data.get("end")
+                chromo_name = gene_data.get("seq_region_name")
+                gene_species = gene_data.get("species")
+                if gene_id and chromo_name and gene_end and gene_start and gene_species:
+                    if gene_species != species:
+                        html = read_html_file("error.html", {"message": "Species do not match"})
+                        self.send_response(404)
+                    else:
+                        region_start = gene_start - 100000
+                        region_end = gene_end + 100000
+                        url2 = "https://rest.ensembl.org/overlap/region/human/" + str(chromo_name) + ":" + str(region_start) + "-" + str(region_end) + "?content-type=application/json;feature=gene"
+                        reqs2 = requests.get(url2)
+
+                        if reqs2.status_code == 200:
+                            gene_data2 = reqs2.json()
+
+                            if gene_data2:
+                                genes = ""
+
+                                for region_gene in gene_data2:
+                                    region_gene_name = region_gene.get("external_name")
+                                    region_gene_id = region_gene.get("id")
+                                    genes += "<li>" + str(region_gene_name) + ": " + str(region_gene_id) + "</li>"
+                                html = read_html_file("geneRegion.html", {"gene_id": gene_id, "gene": gene, "chromo_name": chromo_name, "gene_start": gene_start, "gene_end": gene_end, "region_start": region_start, "region_end": region_end, "genes": genes, })
+                                self.send_response(200)
+                            else:
+                                html = read_html_file("error.html", {"message": "No genes found"})
+                                self.send_response(404)
+                        else:
+                            html = read_html_file("error.html", {"message": "Error with sequence"})
+                            self.send_response(400)
+                else:
+                    html = read_html_file("error.html", {"message": "Gene not found"})
+                    self.send_response(404)
+            else:
+                html = read_html_file("error.html", {"message": "Error with gene"})
+                self.send_response(400)
+            self.send_header("Content-type", "text/html")
+            self.end_headers()
+            self.wfile.write(html.encode())
+
+
+
+
+
+
+
+
 
 
 

@@ -1,68 +1,86 @@
-     # EXAM
-        elif path == "/sequence":
-            eid = query.get("eid", [None])[0]
-            spe = query.get("spe", [None])[0]
+elif path == "/geneRegion":
+query = parse_qs(parsed_path.query)
 
-            if not eid or not spe:
-                serve_error_page(self, 404, "Resource not available", json_response)
-                return
+if not query.get("gene") or not query.get("species"):
+    html = read_html_file("error.html", {"message": "Missing parameters"})
+    self.send_response(400)
+    self.send_header("Content-type", "text/html")
+    self.end_headers()
+    self.wfile.write(html.encode())
+    return
 
-            exam_id = eid.strip().upper()
-            data_gene = get_species_from_id(exam_id)
-            exam_specie = get_species_internal_name(spe)
+gene = query["gene"][0]
+species = query["species"][0]
 
-            if not data_gene:
-                serve_error_page(self, 404, "Resource not available", json_response)
-                return
+url = "https://rest.ensembl.org/lookup/symbol/" + species + "/" + gene + "?content-type=application/json"
+reqs = requests.get(url)
 
-            species_from_id = data_gene["species"]
+if reqs.status_code == 200:
+    data = reqs.json()
 
-            if not species_from_id:
-                serve_error_page(self, 404, "Resource not available", json_response)
-                return
+    gene_id = data.get("id")
+    gene_species = data.get("species")
+    chromo = data.get("seq_region_name")
+    gene_start = data.get("start")
+    gene_end = data.get("end")
 
-            if exam_specie != species_from_id:
-                serve_error_page(self, 404, "Resource not available", json_response)
-                return
+    if gene_id and gene_species and chromo and gene_start and gene_end:
 
-            gene_name = data_gene["display_name"]
-            gene_type = data_gene["object_type"]
+        if gene_species != species:
+            html = read_html_file("error.html", {"message": "Species does not match"})
+            self.send_response(404)
 
-            if not gene_name or not gene_type:
-                serve_error_page(self, 404, "Resource not available", json_response)
-                return
-
-            exam_sequence = exam_get_gene_seq(exam_id, exam_specie)
-
-            if not exam_sequence:
-                serve_error_page(self, 404, "Resource not available", json_response)
-                return
-
-            exam_size = len(exam_sequence)
-            exam_seq_obj = Seq(exam_sequence)
-            exam_base_count = exam_seq_obj.count()
-
-            exam_count_results = {}
-
-            for base in "ACGT":
-                count = exam_base_count[base]
-                exam_count_results[base] = count
-
-                context = {
-                    "gene_id": exam_id,
-                    "gene_name": gene_name,
-                    "gene_type": gene_type,
-                    "gene_size": exam_size,
-                    "count_results": exam_count_results,
-                    "exam_sequence": exam_sequence,
-                }
-
-                if json_response:
-                    render_json(self, context)
-                else:
-                    render_html(self, "exam_result.html", context)
-
-        # Error
         else:
-            serve_error_page(self, 404, "Resource not available", json_response)
-            return
+            region_start = gene_start - 100000
+            region_end = gene_end + 100000
+
+            url2 = "https://rest.ensembl.org/overlap/region/human/" + str(chromo) + ":" + str(region_start) + "-" + str(
+                region_end) + "?content-type=application/json;feature=gene"
+
+            reqs2 = requests.get(url2)
+
+            if reqs2.status_code == 200:
+                region_data = reqs2.json()
+
+                if region_data:
+
+                    genes = ""
+
+                    for region_gene in region_data:
+                        region_gene_name = region_gene.get("external_name")
+                        region_gene_id = region_gene.get("id")
+
+                        genes += "<li>" + str(region_gene_name) + ": " + str(region_gene_id) + "</li>"
+
+                    html = read_html_file("geneRegion.html", {
+                        "gene": gene,
+                        "gene_id": gene_id,
+                        "chromosome": chromo,
+                        "gene_start": gene_start,
+                        "gene_end": gene_end,
+                        "region_start": region_start,
+                        "region_end": region_end,
+                        "genes": genes
+                    })
+
+                    self.send_response(200)
+
+                else:
+                    html = read_html_file("error.html", {"message": "No genes found"})
+                    self.send_response(404)
+
+            else:
+                html = read_html_file("error.html", {"message": "Error with region"})
+                self.send_response(400)
+
+    else:
+        html = read_html_file("error.html", {"message": "Gene not found"})
+        self.send_response(404)
+
+else:
+    html = read_html_file("error.html", {"message": "Error with gene"})
+    self.send_response(400)
+
+self.send_header("Content-type", "text/html")
+self.end_headers()
+self.wfile.write(html.encode())
